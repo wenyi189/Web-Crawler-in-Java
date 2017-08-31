@@ -1,0 +1,6 @@
+.idea
+*.iml
+out
+doc
+.DS_Store
+*.zip
