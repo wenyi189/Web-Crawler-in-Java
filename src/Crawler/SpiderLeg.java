@@ -1,43 +1,89 @@
 package Crawler;
 
-import java.io.IOException;
-
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 public class SpiderLeg {
 
+    // pretend as Mozilla browser
+    private static final String USER_AGENT =
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5";
     private  List<String> links = new LinkedList<>();
     private Document htmlDocument;
+    private String url;
 
+
+    public SpiderLeg(String url) {
+        this.url = url;
+    }
     /**
+     * This does all the work
+     * It makes a HTTP request, checks the response, and collects all the links on the page
      *
-     * @param nextUrl
+     * @return boolean
+     *  -successful crawl
      */
-    public void crawl(String url) {
+    public boolean crawl() {
         try {
             Connection connection = Jsoup.connect(url).userAgent(USER_AGENT);
-            Document htmlDocument = connection.get();
-            this.htmmlDocument = htmlDocument;
+            htmlDocument = connection.get();
+//            this.htmlDocument = htmlDocument;
+            // If the connection responded a 200 code
+            if (connection.response().statusCode() == 200) {
+                System.out.println("**Visiting** Received web page at " + url);
+            } else if (!connection.response().contentType().contains("text/html")) {
+                System.out.println("**Failure** Retrived non HTML");
+                return false;
+            }
 
             System.out.println("Received web page at " + url);
 
             Elements linksOnPage = htmlDocument.select("a[href]");
             System.out.println("Found (" + linksOnPage.size() + ") links");
+
+            for (Element link : linksOnPage) {
+                links.add(link.absUrl("href"));
+            }
+
+            return true;
+        } catch (IOException e){
+            // Not successful
+            System.out.println("Error in HTTP: " + e);
+            return false;
         }
     }
 
     /**
+     * Perform word searching on the body.
+     * This method should only be called after a successful crawl.
      *
      * @param searchWord
-     * @return
+     * @return boolean whether or not the word is found
      */
-    public boolean searchForWord(String searchWord) {
+    public boolean searchForWord(String searchWord, HashMap<String, Integer> wordResult) {
+        System.out.println("Searching for the word " + searchWord + "...");
+
+        if (htmlDocument == null) {
+            System.out.println("**Error** Call crawl() before performing analysis on the document");
+            return false;
+        }
+
+        String bodyText = htmlDocument.body().text();
+
+        if(bodyText.toLowerCase().contains(searchWord.toLowerCase())) {
+            wordResult.put(url, 1);
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -46,6 +92,6 @@ public class SpiderLeg {
      * @return List of url on the page
      */
     public List<String> getLinks() {
-
+        return links;
     }
 }

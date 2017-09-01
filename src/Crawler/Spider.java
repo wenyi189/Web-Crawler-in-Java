@@ -1,15 +1,13 @@
 package Crawler;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Spider {
 
-    private static final int MAX_PAGES_TO_SEARCH = 100;
+    private static final int MAX_PAGES_TO_SEARCH = 200;
     private Set<String> pageVisited = new HashSet<>();
     private List<String> pageToVisit = new LinkedList<>();
+    private HashMap<String, Integer> wordResult = new HashMap<>();
 
     /**
      * Main launching point for the Spider's functionality
@@ -23,28 +21,35 @@ public class Spider {
      *  -word to search
      */
     public void search(String url, String searchWord) {
-        while(this.pageVisited.size() < MAX_PAGES_TO_SEARCH) {
+        while(pageVisited.size() < MAX_PAGES_TO_SEARCH) {
             String currentUrl;
-            SpiderLeg leg = new SpiderLeg();
 
-            if (this.pageVisited.isEmpty()) {
+            if (pageVisited.isEmpty()) {
                 currentUrl = url;
-                this.pageVisited.add(currentUrl);
+                pageVisited.add(currentUrl);
             } else {
                 currentUrl = nextUrl();
+                if (currentUrl == null) {
+                    System.out.println("**Done** No more URL to work with");
+                    break;
+                }
             }
 
-            leg.crawl(currentUrl);
-            boolean success = leg.searchForWord(searchWord);
+            SpiderLeg leg = new SpiderLeg(currentUrl);
+
+            leg.crawl();
+            boolean success = leg.searchForWord(searchWord, wordResult);
 
             if(success) {
                 System.out.println("**Success** Word " + searchWord + "found at " + currentUrl);
-                break;
-            } else {
-                this.pageToVisit.addAll(leg.getLinks());
+                pageToVisit.addAll(leg.getLinks());
             }
+
+            System.out.println();
         }
-        System.out.println("**Done** Visited " + this.pageVisited.size() + "web page(s)");
+        System.out.println("**Done**");
+        System.out.println("Visited " + pageVisited.size() + " web page(s)");
+        System.out.println("Found keyword on " + wordResult.size() + " page(s)");
     }
 
     /**
@@ -58,10 +63,14 @@ public class Spider {
         String nextUrl;
 
         do {
-            nextUrl = this.pageToVisit.remove(0);
-        } while(this.pageVisited.contains(nextUrl));
+            if (pageToVisit.size() > 0) {
+                nextUrl = pageToVisit.remove(0);
+            } else {
+                nextUrl = null;
+            }
+        } while(pageVisited.contains(nextUrl));
 
-        this.pageVisited.add(nextUrl);
+        pageVisited.add(nextUrl);
         return nextUrl;
     }
 
