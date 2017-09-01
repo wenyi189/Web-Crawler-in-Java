@@ -12,27 +12,15 @@ public class Spider {
     private List<String> pageToVisit = new LinkedList<>();
 
     /**
-     * To determine the next URL to visit
-     * if the URL is already visited, skip it
-     * and not, get the URL and save it to pageVisited
-     *
-     * @return nextUrl
-     */
-    private String nextUrl() {
-        String nextUrl;
-
-        do {
-            nextUrl = this.pageToVisit.remove(0);
-        } while(this.pageVisited.contains(nextUrl));
-
-        this.pageVisited.add(nextUrl);
-        return nextUrl;
-    }
-
-    /**
+     * Main launching point for the Spider's functionality
+     * It creates spider legs that make an HTTP request
+     * and parse the response
      *
      * @param url
+     *  -starting url
+     *
      * @param searchWord
+     *  -word to search
      */
     public void search(String url, String searchWord) {
         while(this.pageVisited.size() < MAX_PAGES_TO_SEARCH) {
@@ -58,5 +46,25 @@ public class Spider {
         }
         System.out.println("**Done** Visited " + this.pageVisited.size() + "web page(s)");
     }
+
+    /**
+     * To determine the next URL to visit
+     * if the URL is already visited, skip it
+     * and not, get the URL and save it to pageVisited
+     *
+     * @return nextUrl
+     */
+    private String nextUrl() {
+        String nextUrl;
+
+        do {
+            nextUrl = this.pageToVisit.remove(0);
+        } while(this.pageVisited.contains(nextUrl));
+
+        this.pageVisited.add(nextUrl);
+        return nextUrl;
+    }
+
+
 
 }
