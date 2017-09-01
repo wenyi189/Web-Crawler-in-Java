@@ -50,6 +50,7 @@ public class Spider {
         System.out.println("**Done**");
         System.out.println("Visited " + pageVisited.size() + " web page(s)");
         System.out.println("Found keyword on " + wordResult.size() + " page(s)");
+        System.out.println("Results: " + wordResult.toString());
     }
 
     /**

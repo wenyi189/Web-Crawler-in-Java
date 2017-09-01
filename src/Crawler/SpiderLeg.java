@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SpiderLeg {
 
@@ -79,7 +81,16 @@ public class SpiderLeg {
         String bodyText = htmlDocument.body().text();
 
         if(bodyText.toLowerCase().contains(searchWord.toLowerCase())) {
-            wordResult.put(url, 1);
+            int counter = 0;
+
+            final String REGEX = "\\b" + searchWord.toLowerCase() + "\\b";
+            Pattern pattern = Pattern.compile(REGEX);
+            Matcher matcher = pattern.matcher(bodyText);
+            while (matcher.find()) {
+                counter++;
+            }
+
+            wordResult.put(url, counter);
             return true;
         } else {
             return false;
